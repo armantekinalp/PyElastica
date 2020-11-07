@@ -19,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.6] #[3.6, 3.7]
+        python-version: [3.6, 3.7]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -93,19 +93,24 @@ jobs:
           if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
             echo "NUMBA_DISABLE_JIT=1" >> $GITHUB_ENV
             echo "CODECOV_TOKEN=e0fe70c6-c2fb-414b-8d75-8725b7cb334b" >> $GITHUB_ENV
+          else;
+            echo "NUMBA_DISABLE_JIT=0" >> $GITHUB_ENV
+            echo "CODECOV_TOKEN=102" >> $GITHUB_ENV
           fi
-      # Test Pyelastica using pytest
-#       - name: Test PyElastica using pytest
-#         run: |
-#           if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
-#             echo "NUMBA_DISABLE_JIT=1" >> $GITHUB_ENV
-#             echo "$NUMBA_DISABLE_JIT"
-#           fi
-#           echo "action_state=yellow" >> $GITHUB_ENV
+
           
       - name: test env
         run: echo Hello world $NUMBA_DISABLE_JIT is this! and $CODECOV_TOKEN
-
+        
+#       # Test Pyelastica using pytest
+#       - name: Test PyElastica using pytest
+#         run: |
+#           if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
+#             python3 -m pytest --cov=elastica --cov-report=xml
+#             codecov
+#           else;
+#             python3 -m pytest
+#           fi
           
 
       # Runs a set of commands using the runners shell
