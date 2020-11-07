@@ -19,8 +19,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest] #[ubuntu-latest, macos-latest, windows-latest]
-        python-version: [3.6, 3.7, 3.8]
+        os: [ubuntu-latest] #[ubuntu-latest, macos-latest] #[ubuntu-latest, macos-latest, windows-latest]
+        python-version: [3.7] #[3.6, 3.7, 3.8]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -69,7 +69,7 @@ jobs:
           echo update pip
           python -m pip install --upgrade pip
           echo update requirments
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if ( -f requirements.txt ); then pip install -r requirements.txt; fi
           echo update test requirements
           if [ -f tests/requirements.txt ]; then pip install -r tests/requirements.txt; fi
     
