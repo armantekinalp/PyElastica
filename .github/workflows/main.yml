@@ -2,13 +2,10 @@
 
 name: CI
 
-# Controls when the action will run. Triggers the workflow on push request
-# events for the master branch, and pull request events for all branches.
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ _any_ ]
+# Controls when the action will run. Triggers the workflow on push and pull request
+# events for the all branches.
+on: [push, pull_request]
+
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -19,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest] 
         python-version: [3.6, 3.7, 3.8]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -74,7 +71,7 @@ jobs:
           if [ -f tests/requirements.txt ]; then pip install -r tests/requirements.txt; fi
     
       # Runs a single command using the runners shell
-      - name: Run a one-line script
+      - name: Welcome message
         run: echo Hello, world! Welcome PyElastica Build, lets start testing!
       
 #       # Formatting test with black and flake8
@@ -93,9 +90,8 @@ jobs:
         run: |
           if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
             echo "NUMBA_DISABLE_JIT=1" >> $GITHUB_ENV
-            echo "CODECOV_TOKEN=e0fe70c6-c2fb-414b-8d75-8725b7cb334b" >> $GITHUB_ENV
+            echo "CODECOV_TOKEN=ca23d33f-c704-4cf8-b5ff-dacefe26c494" >> $GITHUB_ENV
           fi
-
         
       # Test Pyelastica using pytest
       - name: Test PyElastica using pytest
