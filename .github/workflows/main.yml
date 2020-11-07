@@ -95,10 +95,9 @@ jobs:
             echo "$NUMBA_DISABLE_JIT"
           fi
           echo "action_state=yellow" >> $GITHUB_ENV
-          echo "$GITHUB_ENV"
-          if [[ "$NUMBA_DISABLE_JIT" == "1" ]]; then
-            echo numba disabled!
-          fi
+          
+          echo Hello world $action_state is this!
+
           
 
       # Runs a set of commands using the runners shell
