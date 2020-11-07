@@ -91,7 +91,7 @@ jobs:
       - name: Test PyElastica using pytest
         run: |
           if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
-            echo "{NUMBA_DISABLE_JIT}={1}" >> $GITHUB_ENV
+            echo "NUMBA_DISABLE_JIT=1" >> $GITHUB_ENV
             echo numba disable jit
             echo $NUMBA_DISABLE_JIT
           fi
