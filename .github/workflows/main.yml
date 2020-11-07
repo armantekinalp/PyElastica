@@ -96,7 +96,8 @@ jobs:
           fi
           echo "action_state=yellow" >> $GITHUB_ENV
           
-          echo Hello world $action_state is this!
+      - name: test env
+        run: echo Hello world $action_state is this!
 
           
 
