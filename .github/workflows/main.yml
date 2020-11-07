@@ -93,7 +93,7 @@ jobs:
           if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
             echo "NUMBA_DISABLE_JIT=1" >> $GITHUB_ENV
             echo "CODECOV_TOKEN=e0fe70c6-c2fb-414b-8d75-8725b7cb334b" >> $GITHUB_ENV
-          else;
+          else
             echo "NUMBA_DISABLE_JIT=0" >> $GITHUB_ENV
             echo "CODECOV_TOKEN=102" >> $GITHUB_ENV
           fi
@@ -108,7 +108,7 @@ jobs:
 #           if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
 #             python3 -m pytest --cov=elastica --cov-report=xml
 #             codecov
-#           else;
+#           else
 #             python3 -m pytest
 #           fi
           
