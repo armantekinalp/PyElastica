@@ -1,0 +1,96 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ _any_ ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.6] #[3.6, 3.7]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      
+      # Ref: https://docs.github.com/en/free-pro-team@latest/actions/guides/building-and-testing-python
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # You can test your matrix by printing the current Python version
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      
+      # Cache the pip requirmenets for other tests. If requirements cached use them to speed up the build.
+      # Ref: https://github.com/actions/cache/blob/main/examples.md#python---pip 
+      - name: Cache pip Linux
+        uses: actions/cache@v2
+        if: startsWith(runner.os, 'Linux')
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Cache pip MacOS
+        uses: actions/cache@v2
+        if: startsWith(runner.os, 'macOS')
+        with:
+          path: ~/Library/Caches/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            
+      - name: Cache pip Windows
+        uses: actions/cache@v2
+        if: startsWith(runner.os, 'Windows')
+        with:
+          path: ~\AppData\Local\pip\Cache
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f tests/requirements.txt]; then pip install -r tests/requirements.txt; fi
+    
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        run: echo Hello, world! Welcome PyElastica Build, lets start testing!
+      
+      # Formatting test with black and flake8
+      - name: Black and Flake8 formatting tests
+        run: |
+          if [[${{ matrix.python-version }} == '3.6']]; then 
+            black --version
+            black --check elastica tests
+            flake8 --version
+            flake8 elastica tests 
+          fi
+#       # Test Pyelastica using pytest
+#       - name: Test PyElastica using pytest
+#         run: |
+#           if [${{ matrix.python-version }} == 3.6]; then
+#             python3 -m pytest --cov=elastica --cov-report=xml;
+          
+
+      # Runs a set of commands using the runners shell
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          echo test, and deploy your project.
