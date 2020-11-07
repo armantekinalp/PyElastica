@@ -76,20 +76,23 @@ jobs:
       - name: Run a one-line script
         run: echo Hello, world! Welcome PyElastica Build, lets start testing!
       
-      # Formatting test with black and flake8
-      - name: Black and Flake8 formatting tests
+#       # Formatting test with black and flake8
+#       - name: Black and Flake8 formatting tests
+#         run: |
+#           if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
+#             black --version
+#             black --check elastica tests
+#             flake8 --version
+#             flake8 elastica tests 
+#           fi
+          ## python3 -m pytest --cov=elastica --cov-report=xml
+          
+      # Test Pyelastica using pytest
+      - name: Test PyElastica using pytest
         run: |
           if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
-            black --version
-            black --check elastica tests
-            flake8 --version
-            flake8 elastica tests 
+            echo "{NUMBA_DISABLE_JIT}={1}" >> $GITHUB_ENV
           fi
-#       # Test Pyelastica using pytest
-#       - name: Test PyElastica using pytest
-#         run: |
-#           if [ "${{ matrix.python-version }}" == "3.6" ]; then
-#             python3 -m pytest --cov=elastica --cov-report=xml;
           
 
       # Runs a set of commands using the runners shell
