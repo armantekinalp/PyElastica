@@ -96,7 +96,8 @@ jobs:
             echo $NUMBA_DISABLE_JIT
           fi
           echo "action_state=yellow" >> $GITHUB_ENV
-          printf $action_state
+          echo $action_state
+          printf -v $action_state
           
 
       # Runs a set of commands using the runners shell
