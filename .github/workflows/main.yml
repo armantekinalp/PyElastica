@@ -93,11 +93,10 @@ jobs:
           if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
             echo "NUMBA_DISABLE_JIT=1" >> $GITHUB_ENV
             echo numba disable jit
-            echo $NUMBA_DISABLE_JIT
+            echo "$NUMBA_DISABLE_JIT"
           fi
           echo "action_state=yellow" >> $GITHUB_ENV
-          echo $action_state
-          printf -v $action_state
+          echo "$action_state"
           
 
       # Runs a set of commands using the runners shell
