@@ -36,41 +36,41 @@ jobs:
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
       
-      # Cache the pip requirmenets for other tests. If requirements cached use them to speed up the build.
-      # Ref: https://github.com/actions/cache/blob/main/examples.md#python---pip 
-      - name: Cache pip Linux
-        uses: actions/cache@v2
-        if: startsWith(runner.os, 'Linux')
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - name: Cache pip MacOS
-        uses: actions/cache@v2
-        if: startsWith(runner.os, 'macOS')
-        with:
-          path: ~/Library/Caches/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+#       # Cache the pip requirmenets for other tests. If requirements cached use them to speed up the build.
+#       # Ref: https://github.com/actions/cache/blob/main/examples.md#python---pip 
+#       - name: Cache pip Linux
+#         uses: actions/cache@v2
+#         if: startsWith(runner.os, 'Linux')
+#         with:
+#           path: ~/.cache/pip
+#           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+#           restore-keys: |
+#             ${{ runner.os }}-pip-
+#       - name: Cache pip MacOS
+#         uses: actions/cache@v2
+#         if: startsWith(runner.os, 'macOS')
+#         with:
+#           path: ~/Library/Caches/pip
+#           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+#           restore-keys: |
+#             ${{ runner.os }}-pip-
             
-      - name: Cache pip Windows
-        uses: actions/cache@v2
-        if: startsWith(runner.os, 'Windows')
-        with:
-          path: ~\AppData\Local\pip\Cache
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - name: Install dependencies
-        run: |
-          echo update pip
-          python -m pip install --upgrade pip
-          echo update requirments
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          echo update test requirements
-          if [ -f tests/requirements.txt ]; then pip install -r tests/requirements.txt; fi
+#       - name: Cache pip Windows
+#         uses: actions/cache@v2
+#         if: startsWith(runner.os, 'Windows')
+#         with:
+#           path: ~\AppData\Local\pip\Cache
+#           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+#           restore-keys: |
+#             ${{ runner.os }}-pip-
+#       - name: Install dependencies
+#         run: |
+#           echo update pip
+#           python -m pip install --upgrade pip
+#           echo update requirments
+#           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+#           echo update test requirements
+#           if [ -f tests/requirements.txt ]; then pip install -r tests/requirements.txt; fi
     
       # Runs a single command using the runners shell
       - name: Run a one-line script
@@ -87,17 +87,23 @@ jobs:
 #           fi
           ## python3 -m pytest --cov=elastica --cov-report=xml
           
-      # Test Pyelastica using pytest
-      - name: Test PyElastica using pytest
+      # Set environment variables for coverage test, which is done using python 3.6
+      - name: Set environment variables for coverage test
         run: |
           if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
             echo "NUMBA_DISABLE_JIT=1" >> $GITHUB_ENV
-            echo "$NUMBA_DISABLE_JIT"
           fi
-          echo "action_state=yellow" >> $GITHUB_ENV
+      # Test Pyelastica using pytest
+#       - name: Test PyElastica using pytest
+#         run: |
+#           if [[ "${{ matrix.python-version }}" == "3.6" ]]; then 
+#             echo "NUMBA_DISABLE_JIT=1" >> $GITHUB_ENV
+#             echo "$NUMBA_DISABLE_JIT"
+#           fi
+#           echo "action_state=yellow" >> $GITHUB_ENV
           
       - name: test env
-        run: echo Hello world $action_state is this!
+        run: echo Hello world $NUMBA_DISABLE_JIT is this!
 
           
 
