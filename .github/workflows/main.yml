@@ -65,9 +65,12 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
+          echo update pip
           python -m pip install --upgrade pip
+          echo update requirments
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          if [ -f tests/requirements.txt]; then pip install -r tests/requirements.txt; fi
+          echo update test requirements
+          if [ -f tests/requirements.txt ]; then pip install -r tests/requirements.txt; fi
     
       # Runs a single command using the runners shell
       - name: Run a one-line script
@@ -85,7 +88,7 @@ jobs:
 #       # Test Pyelastica using pytest
 #       - name: Test PyElastica using pytest
 #         run: |
-#           if [${{ matrix.python-version }} == 3.6]; then
+#           if [ "${{ matrix.python-version }}" == "3.6" ]; then
 #             python3 -m pytest --cov=elastica --cov-report=xml;
           
 
