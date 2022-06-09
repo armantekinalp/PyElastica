@@ -43,10 +43,10 @@ spacing_direction_btw_backbone_rods = normal
 n_backbone_rods = 3
 
 # setting up test params
-n_magnetic_rod_per_backbone = 10
+n_magnetic_rod_per_backbone = 6
 n_elem_magnetic_rod = 20
 base_length_magnetic_rods = 1.5  # m
-base_radius_backbone_rod = 0.15
+base_radius_backbone_rod = 0.15 * 10
 base_radius_magnetic_rod = 0.15  # m
 
 spacing_btw_magnetic_rods_in_one_backbone = (
@@ -99,10 +99,10 @@ for backbone_idx in range(n_backbone_rods):
         normal_back_bone,
         base_length_back_bone,
         base_radius_backbone_rod,
-        density,
+        density / 100,
         nu,
-        E,
-        shear_modulus=shear_modulus,
+        E * 2,
+        shear_modulus=shear_modulus * 2,
     )
     magnetic_decapot_simulator.append(back_bone_rod)
     backbone_rod_list.append(back_bone_rod)
@@ -140,10 +140,10 @@ for backbone_idx in range(n_backbone_rods):
     )
 
     # Magnetic rod
-    if not backbone_idx % 2 == 0:
-        # Magnetic rods are not attached to every backbone. We are putting two empty backbones between every
-        # magnetic rod - backbone pair.
-        continue
+    # if not backbone_idx % 2 == 0:
+    #     # Magnetic rods are not attached to every backbone. We are putting two empty backbones between every
+    #     # magnetic rod - backbone pair.
+    #     continue
     for i in range(n_magnetic_rod_per_backbone):
         magnetization_direction = np.array(
             [np.sin(magnetization_angle[i]), 0.0, np.cos(magnetization_angle[i])]
@@ -240,7 +240,9 @@ for rod_one_idx, rod_one in enumerate(backbone_rod_list):
             offset_btw_rods,
         ) = get_connection_vector_straight_straight_rod(rod_one, rod_two)
 
-        if np.max(offset_btw_rods) > 1e-8:
+        if (
+            np.max(offset_btw_rods) > 1e-8
+        ):  # spacing_btw_magnetic_rods_in_one_backbone - 2 * rod_one.radius[0]:# 1e-8:
             # In this case rods are far from each other so no need for connection.
             continue
 
@@ -271,20 +273,24 @@ for rod_one_idx, rod_one in enumerate(backbone_rod_list):
             )
 
 
-# # Create magnetic field object
-# magnetic_field_object = ConstantMagneticField(
-#     magnetic_field_amplitude=magnetic_field_strength * np.array([0, 0, 1]),
-#     ramp_interval=0.01,
-#     start_time=0.0,
-#     end_time=5e3,
-# )
-#
-# # Apply magnetic forces
-# for i, rod in enumerate(magnetic_rod_list):
-#     magnetic_decapot_simulator.add_forcing_to(rod).using(
-#         ExternalMagneticFieldForces,
-#         external_magnetic_field=magnetic_field_object,
-#     )
+# Create magnetic field object
+magnetic_field_object = SingleModeOscillatingMagneticField(
+    magnetic_field_amplitude=magnetic_field_strength * np.array([1, 1e-2, 1]),
+    magnetic_field_angular_frequency=np.array(
+        [angular_frequency, 0, angular_frequency]
+    ),
+    magnetic_field_phase_difference=np.array([0, np.pi / 2, np.pi / 2]),
+    ramp_interval=0.01,
+    start_time=12,
+    end_time=5e3,
+)
+
+# Apply magnetic forces
+for i, rod in enumerate(magnetic_rod_list):
+    magnetic_decapot_simulator.add_forcing_to(rod).using(
+        ExternalMagneticFieldForces,
+        external_magnetic_field=magnetic_field_object,
+    )
 
 
 # Add gravitational forces
@@ -330,13 +336,13 @@ class GravityForcesRampUp(GravityForces):
         self.compute_gravity_forces(acc_gravity, system.mass, system.external_forces)
 
 
-gravitational_acc = -9.80665 / 250  # FIXME: gravity is small
+gravitational_acc = -9.80665 / 100  # 250  # FIXME: gravity is small
 for rod in magnetic_rod_list:
     magnetic_decapot_simulator.add_forcing_to(rod).using(
         GravityForcesRampUp,
         acc_gravity=direction * gravitational_acc,
         start_time=0.0,
-        ramp_interval=20,
+        ramp_interval=10,
         end_time=1e6,
     )
 
@@ -345,7 +351,7 @@ for rod in backbone_rod_list:
         GravityForcesRampUp,
         acc_gravity=direction * gravitational_acc,
         start_time=0.0,
-        ramp_interval=20,
+        ramp_interval=10,
         end_time=1e6,
     )
 
@@ -391,12 +397,12 @@ class MagneticBeamCallBack(CallBackBaseClass):
             self.callback_params["tangents"].append(system.tangents.copy())
 
 
-num_cycles = 0.25 * 4  # 4#1#8
+num_cycles = 0.25 * 4 * 5  # 4#1#8
 final_time = num_cycles * 2 * np.pi / angular_frequency
 dl = base_length_magnetic_rods / n_elem_magnetic_rod
 dt = 0.01 * dl
 total_steps = int(final_time / dt)
-rendering_fps = 10
+rendering_fps = 30
 step_skip = int(1.0 / (rendering_fps * dt))
 
 
@@ -430,6 +436,52 @@ plot_video_with_surface(
     fps=rendering_fps,
     step=4,
     x_limits=(-5, carpet_length + 2),
-    y_limits=(-2, 2),
+    y_limits=(-2, 20),
     z_limits=(-5, 2 + carpet_length),
+)
+
+# Save data as npz file
+current_path = os.getcwd()
+save_folder = os.path.join(current_path, "data")
+os.makedirs(save_folder, exist_ok=True)
+time = np.array(rod_post_processing_list[0]["time"])
+
+n_magnetic_rod = len(magnetic_rod_list)
+
+magnetic_rods_position_history = np.zeros(
+    (n_magnetic_rod, time.shape[0], 3, n_elem_magnetic_rod + 1)
+)
+magnetic_rods_radius_history = np.zeros(
+    (n_magnetic_rod, time.shape[0], n_elem_magnetic_rod)
+)
+backbone_rods_position_history = np.zeros(
+    (n_backbone_rods, time.shape[0], 3, n_elem_back_bone + 1)
+)
+backbone_rods_radius_history = np.zeros(
+    (n_backbone_rods, time.shape[0], n_elem_back_bone)
+)
+
+for i in range(n_magnetic_rod):
+    magnetic_rods_position_history[i, :, :, :] = np.array(
+        rod_post_processing_list[i]["position"]
+    )
+    magnetic_rods_radius_history[i, :, :] = np.array(
+        rod_post_processing_list[i]["radius"]
+    )
+
+for i in range(n_backbone_rods):
+    backbone_rods_position_history[i, :, :, :] = np.array(
+        rod_post_processing_list[i + n_magnetic_rod]["position"]
+    )
+    backbone_rods_radius_history[i, :, :] = np.array(
+        rod_post_processing_list[i + n_magnetic_rod]["radius"]
+    )
+
+np.savez(
+    os.path.join(save_folder, "magnetic_decapot.npz"),
+    time=time,
+    magnetic_rods_position_history=magnetic_rods_position_history,
+    magnetic_rods_radius_history=magnetic_rods_radius_history,
+    backbone_rods_position_history=backbone_rods_position_history,
+    backbone_rods_radius_history=backbone_rods_radius_history,
 )
