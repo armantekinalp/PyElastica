@@ -121,7 +121,7 @@ class MagneticBeamCallBack(CallBackBaseClass):
             self.callback_params["tangents"].append(system.tangents.copy())
 
 
-num_cycles = 0.003
+num_cycles = 3
 final_time = num_cycles * 2 * np.pi / angular_frequency
 dl = base_length / n_elem
 dt = 0.01 * dl
