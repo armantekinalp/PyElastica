@@ -16,8 +16,8 @@ class MagneticBeamSimulator(BaseSystemCollection, Constraints, Forcing, CallBack
 
 magnetic_beam_sim = MagneticBeamSimulator()
 # setting up test params
-n_rods_x = 8
-n_rods_y = 4
+n_rods_x = 32
+n_rods_y = 16
 n_rods = n_rods_x * n_rods_y
 base_length = 1.5  # m
 spacing_between_rods = base_length  # following Gu2020
@@ -121,12 +121,12 @@ class MagneticBeamCallBack(CallBackBaseClass):
             self.callback_params["tangents"].append(system.tangents.copy())
 
 
-num_cycles = 3
+num_cycles = 0.003
 final_time = num_cycles * 2 * np.pi / angular_frequency
 dl = base_length / n_elem
 dt = 0.01 * dl
 total_steps = int(final_time / dt)
-rendering_fps = 10
+rendering_fps = 30
 step_skip = int(1.0 / (rendering_fps * dt))
 
 # Add call back for plotting time history of the rod
@@ -153,4 +153,36 @@ plot_video_with_surface(
     y_limits=(-spacing_between_rods, carpet_length_y + spacing_between_rods),
     z_limits=(-spacing_between_rods, 1.5 * base_length),
     vis3D=True,
+)
+
+# Save data as npz file
+current_path = os.getcwd()
+save_folder = os.path.join(current_path, "data")
+os.makedirs(save_folder, exist_ok=True)
+time = np.array(rod_post_processing_list[0]["time"])
+
+n_magnetic_rod = len(magnetic_rod_list)
+
+magnetic_rods_position_history = np.zeros(
+    (n_magnetic_rod, time.shape[0], 3, n_elem + 1)
+)
+magnetic_rods_radius_history = np.zeros(
+    (n_magnetic_rod, time.shape[0], n_elem)
+)
+
+
+for i in range(n_magnetic_rod):
+    magnetic_rods_position_history[i, :, :, :] = np.array(
+        rod_post_processing_list[i]["position"]
+    )
+    magnetic_rods_radius_history[i, :, :] = np.array(
+        rod_post_processing_list[i]["radius"]
+    )
+
+
+np.savez(
+    os.path.join(save_folder, "2d_magnetic_cilia_carpet_rotating.npz"),
+    time=time,
+    magnetic_rods_position_history=magnetic_rods_position_history,
+    magnetic_rods_radius_history=magnetic_rods_radius_history,
 )
