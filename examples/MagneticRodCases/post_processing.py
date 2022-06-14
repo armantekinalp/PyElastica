@@ -216,6 +216,7 @@ def plot_video_with_surface(
         ax.set_xlim(*xlim)
         ax.set_ylim(*ylim)
         ax.set_zlim(*zlim)
+        ax.set_box_aspect((xlim[1] - xlim[0], ylim[1] - ylim[0], zlim[1] - zlim[0]))
 
         time_idx = 0
         rod_lines = [None for _ in range(n_visualized_rods)]
