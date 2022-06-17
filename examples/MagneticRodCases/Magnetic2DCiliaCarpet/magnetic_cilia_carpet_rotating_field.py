@@ -16,8 +16,8 @@ class MagneticBeamSimulator(BaseSystemCollection, Constraints, Forcing, CallBack
 
 magnetic_beam_sim = MagneticBeamSimulator()
 # setting up test params
-n_rods_x = 32
-n_rods_y = 16
+n_rods_x = 8
+n_rods_y = 4
 n_rods = n_rods_x * n_rods_y
 base_length = 1.5  # m
 spacing_between_rods = base_length  # following Gu2020
@@ -29,9 +29,9 @@ for i in range(n_rods):
 direction = np.array([0.0, 0.0, 1.0])
 normal = np.array([0.0, 1.0, 0.0])
 base_radius = 0.15  # m
-base_area = np.pi * base_radius**2
+base_area = np.pi * base_radius ** 2
 volume = base_area * base_length
-moment_of_inertia = np.pi / 4 * base_radius**4
+moment_of_inertia = np.pi / 4 * base_radius ** 4
 density = 2.39e3  # kg/m3
 nu = 50
 E = 1.85e5  # Pa
@@ -49,17 +49,32 @@ magnetization_density = (
 )
 carpet_length_x = spacing_between_rods * (n_rods_x - 1)
 carpet_length_y = spacing_between_rods * (n_rods_y - 1)
-spatial_magnetiation_wavelength = carpet_length_x
+spatial_magnetisation_wavelength = carpet_length_x
 spatial_magnetisation_phase_diff = np.pi
-magnetization_angle = spatial_magnetisation_phase_diff + (
-    2 * np.pi * start_collection[..., 0] / spatial_magnetiation_wavelength
+magnetization_angle_x = spatial_magnetisation_phase_diff + (
+    2 * np.pi * start_collection[..., 0] / spatial_magnetisation_wavelength
+)
+magnetization_angle_y = spatial_magnetisation_phase_diff + (
+    2 * np.pi * start_collection[..., 1] / spatial_magnetisation_wavelength
 )
 magnetic_rod_list = []
 
 for i in range(n_rods):
-    magnetization_direction = np.array(
-        [np.sin(magnetization_angle[i]), 0.0, np.cos(magnetization_angle[i])]
-    ).reshape(3, 1) * np.ones((n_elem))
+    magnetization_direction = (
+        np.array(
+            [
+                np.sin(magnetization_angle_x[i]),
+                np.sin(magnetization_angle_y[i]),
+                np.cos(magnetization_angle_x[i]) + np.cos(magnetization_angle_y[i]),
+            ]
+        ).reshape(3, 1)
+        * np.ones((n_elem))
+        / np.sqrt(
+            2
+            + 2 * np.cos(magnetization_angle_x[i]) * np.cos(magnetization_angle_y[i])
+            + 1e-12
+        )
+    )
     magnetic_rod = MagneticRod.straight_rod(
         n_elem,
         start_collection[i],
@@ -166,9 +181,7 @@ n_magnetic_rod = len(magnetic_rod_list)
 magnetic_rods_position_history = np.zeros(
     (n_magnetic_rod, time.shape[0], 3, n_elem + 1)
 )
-magnetic_rods_radius_history = np.zeros(
-    (n_magnetic_rod, time.shape[0], n_elem)
-)
+magnetic_rods_radius_history = np.zeros((n_magnetic_rod, time.shape[0], n_elem))
 
 
 for i in range(n_magnetic_rod):
